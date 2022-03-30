@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Radwan plotly </title>
+  <!-- <link rel="stylesheet" type="text/css" href="bootstrap-5.1.3/css/bootstrap.min.css"> -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap%405.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script type="text/javascript" src="https://cnd.plot.ly/plotly-2.9.0.min.js"></script>
+  <script type="text/javascript" src="https://cndjs.cloudflare.com/ajax/libs/mathjs/10.4.2/math.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <!-- 
+  <script type="text/javascript" src="jquery.js"></script>
+ <script type="text/javascript"  src="math/math.js"></script>
+  <script type="text/javascript" src="ploty/plotly-latest.min.js"></script>
+ -->
+  <style>
+
+    input {
+      padding: 6px;
+    }
+    body, html, input {
+      font-family: sans-serif;
+      font-size: 11pt;
+
+    }
+    form {
+      margin: 20px 0;
+    }
+    .form-control{
+      display: inline-block;
+    }
+    .app{
+      background: lightgray;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="container col-lg-10  col-sm-11 col-md-11 app mt-2">
+<form id="form" >
+  <div class="form-group ">
+
+    <div class="row">
+      <div class="col">
+    <label for="min">min:
+  <input type="number" id="min" value="-10"  class="form-control frm"  max="3000" min="1"/></label></div>&nbsp &nbsp &nbsp &nbsp&nbsp &nbsp &nbsp &nbsp
+      <div class="col">
+    <label for="max">max:
+  <input type="number" id="max" value="10"  class="form-control frm" max="3000" min="1" /></label></div>&nbsp &nbsp &nbsp &nbsp&nbsp &nbsp &nbsp &nbsp
+   <div class="col">
+    <label for="step">step:
+  <input type="number" id="step" value="0.2" step="0.1"class="form-control frm" /></label>
+</div>
+ </div>
+<br>
+<div class="row">
+   <div class="col">
+    <label for="eq1">Equation 1:
+  <input type="text" id="eq1" value=""  class="form-control frm"  autocomplete /></label>&nbsp &nbsp &nbsp &nbsp&nbsp &nbsp &nbsp &nbsp</div>
+  <div class="col">
+    <label for="eq2">Equation 2:
+  <input type="text" id="eq2" value=""class="form-control frm" autocomplete /></label>&nbsp &nbsp &nbsp &nbsp&nbsp &nbsp &nbsp &nbsp</div>
+  <div class="col">
+    <label for="eq2">Equation 3:
+  <input type="text" id="eq3" value=""class="form-control frm" autocomplete /></label>
+</div></div>
+</div>
+</form>
+
+<div id="plot"></div>
+
+</div>
+<script type="text/javascript">
+   var eq1,eq2,eq3,min,max,step;
+   var data=[];
+   var trace=[];
+   function setItem(){
+    if(localStorage.getItem("eq1")){
+    document.getElementById("eq1").value = localStorage.getItem("eq1");
+      }
+
+    if(localStorage.getItem("eq2")){
+     document.getElementById("eq2").value =  localStorage.getItem("eq2");
+  }
+    if(localStorage.getItem("eq3")){
+    document.getElementById("eq3").value =  localStorage.getItem("eq3");
+    }
+    if(localStorage.getItem("min")){
+    document.getElementById("min").value = localStorage.getItem("min");
+      }
+      
+    if(localStorage.getItem("max")){
+     document.getElementById("max").value =  localStorage.getItem("max");
+  }
+    if(localStorage.getItem("step")){
+    document.getElementById("step").value =  localStorage.getItem("step");
+    }
+   }
+   setItem();
+   function getValue(){
+     min = document.getElementById("min").value;
+     max = document.getElementById("max").value;
+     step = document.getElementById("step").value;
+      eq1 = document.getElementById("eq1").value;
+      eq2 = document.getElementById("eq2").value;
+      eq3 = document.getElementById("eq3").value;
+      localStorage.setItem("min",min);
+      localStorage.setItem("max",max);
+      localStorage.setItem("step",step);
+      localStorage.setItem("eq1",eq1);
+      localStorage.setItem("eq2",eq2);
+      localStorage.setItem("eq3",eq3);
+   }
+   
+   getValue();
+
+   window.onload=function(){
+
+     function change(f){
+      getValue();
+      if((min<-600 || min>600 )|| (max>600 || max<-600) || max<min || step>3)
+        {
+           $(f).css({
+            border : "2px solid red",
+            boxShadow : "2px 2px 10px red"
+           });
+        }
+      else{
+        $(f).css({
+            border : "2px solid skyblue",
+            boxShadow : "2px 2px 10px skyblue"
+           });
+      pl1.update(eq1);
+      pl2.update(eq2);
+      pl3.update(eq3);
+    }
+    }
+    var frm = $(".frm").on({
+      change: function(){
+       change(this);
+     },
+     keyup: function(){
+       change(this);
+     }
+   });
+   }
+
+  function Ploty(exp, clr) {
+      // compile the expression once
+      this.expression = exp;
+      this.clr = clr;
+      this.trace;
+      var _this=this;
+      this.draw=function(){
+      const expr = math.compile(this.expression);
+
+      // evaluate the expression repeatedly for different values of x
+      const xValues = math.range(min, max, step).toArray()
+      const yValues = xValues.map(function (x) {
+        return expr.evaluate({x: x});
+      })
+
+      // render the plot using plotly
+    _this.trace = {
+        x: xValues,
+        y: yValues,
+        marker:{
+          color:_this.clr,
+        },
+        // mode:"markers",
+        type: 'scatter'
+      }
+       data.push(_this.trace);
+      Plotly.newPlot('plot', data);
+     }
+     this.update = function(exp, clr=_this.clr){
+      if(exp!=null)
+        _this.expression = exp;
+        _this.clr = clr;
+     data = data.filter(function(v,i){
+        return v!=_this.trace;
+     });
+      this.draw();
+     }
+  }
+  //initialize plotly
+ var pl1 = new Ploty(eq1,"red");
+ var pl2 = new Ploty(eq2,"green");
+ var pl3 = new Ploty(eq3,"orange");
+ pl1.draw();
+ pl2.draw();
+ pl3.draw();
+</script>
+
+</body>
+</html>
