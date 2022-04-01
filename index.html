@@ -103,9 +103,9 @@
      min = document.getElementById("min").value;
      max = document.getElementById("max").value;
      step = document.getElementById("step").value;
-      eq1 = document.getElementById("eq1").value;
-      eq2 = document.getElementById("eq2").value;
-      eq3 = document.getElementById("eq3").value;
+      eq1 = (document.getElementById("eq1").value).toLowerCase();
+      eq2 = (document.getElementById("eq2").value).toLowerCase();
+      eq3 = (document.getElementById("eq3").value).toLowerCase();
       localStorage.setItem("min",min);
       localStorage.setItem("max",max);
       localStorage.setItem("step",step);
